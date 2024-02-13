@@ -5,6 +5,8 @@ import json
 import requests
 from utils import *
 
+#향후 지역기반관광정보조회 시 필요한 기초 정보들 수집용 코드
+
 #Refer https://www.data.go.kr/data/15101578/openapi.do#/API%20%EB%AA%A9%EB%A1%9D/areaBasedList1
 
 YOUR_API_KEY = None
@@ -97,7 +99,50 @@ def save_serviceCode_cat3():
             else:
                 break
         
-    save_to_json(save_items_json, "serviceCode_concated_all.json")
+    save_to_json(save_items_json, "serviceCode_cat3.json")
+
+
+def save_regionCode_cat1():
+    """
+    지역분류코드 조회의 지역코드를 json 형태로 저장
+    """
+    params = VISITKOREA_BASIC_PARAMS.copy()
+    params.update({"numOfRows": 100})
+    endpoint = "/areaCode1"
+    
+    info = get_visitkorea_api(endpoint,params)
+    save_to_json(info, "areaCode_cat1.json")
+
+def save_regionCode_cat2():
+    """
+    지역분류코드 조회의 시군구코드를 json 형태로 저장
+    """
+    endpoint = "/areaCode1"
+    regionCode_cat1 = read_from_json("areaCode_cat1.json")
+    
+    
+    only_save_name2_item = {"items": {} }
+    
+    for item in regionCode_cat1['response']['body']['items']['item']:
+        #저장된 cat1.json에서 대분류를 가져와, 각각 중분류 정보 호출
+        code = item['code']
+        params = VISITKOREA_BASIC_PARAMS.copy()
+        params.update({"numOfRows": 100,
+                     "areaCode": code})
+        
+        info = get_visitkorea_api(endpoint,params)
+        
+        only_save_name2_item['items'][code] = (info['response']['body']['items']['item'])
+        
+    save_to_json(only_save_name2_item, "areaCode_cat2.json")
+
 
 if __name__=="__main__":
-    save_serviceCode_cat3()
+    
+    #save_serviceCode_cat1()
+    #save_serviceCode_cat2()
+    #save_serviceCode_cat3()
+    
+    #save_regionCode_cat1()
+    #save_regionCode_cat2()
+    pass
