@@ -7,7 +7,7 @@ import soundfile
 
 r = sr.Recognizer()
 
-def convert_mp3_to_text(path:str): #현재는 path로, 이후 wav 파일로
+def convert_mp3_to_text(path:str): #현재는 path로, 이후 wav 파일로 변경 필요
     
     data, samplerate = soundfile.read(path)
     soundfile.write(path, data, samplerate, subtype='PCM_16')

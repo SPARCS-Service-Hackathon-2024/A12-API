@@ -7,22 +7,39 @@ from src.openai_chatbot import return_chatbot_response, chatting_history
 from src.text2speech import convert_text_to_mp3
 from src.speech2text import convert_mp3_to_text
 import io
-from flask import Flask, send_file
+from flask import Flask, send_file, make_response
 import concurrent.futures
 import asyncio
 import threading
+from flask_cors import CORS
 
 def background_task(user, info_str):
         chat_history.validate_current_user_response(user, info_str)
 
 
 app = Flask(__name__)
+# CORS(app, resources={r'*': {'origins': '*'}}, supports_credentials=True )
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite를 사용하고자 할 때
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/dbname'  # PostgreSQL을 사용하고자 할 때
 db = SQLAlchemy(app)
 
-@app.route('/chat', methods=['POST'])
-async def get_mp3_based_on_text():
+
+  
+def build_preflight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', "*")
+    response.headers.add('Access-Control-Allow-Methods', "*")
+    return response
+    
+def build_actual_response(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
+@app.route('/chat', methods=['POST', 'OPTIONS'])
+def get_mp3_based_on_text():
     """
     info = {
         "user": str,   #사용자 이름 (고유값)
@@ -33,34 +50,39 @@ async def get_mp3_based_on_text():
     }
     
     """
-    info = request.json
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
 
-    if info.get('first_chatting'):
-        chat_history.reset_history_list(info.get('user'))
-    
-    #mp3정보를 text로 변환
-    if info.get('is_text'):
-        info_str = info.get('text')
-    else:
-        info_str = convert_mp3_to_text(info.get('mp3'))
-    
-    #text정보를 통해 답변 생성
-    response_str = return_chatbot_response(info_str=info_str, history_list=chat_history.get_history_list(info.get('user')))    
-    
-    #history정보 업데이트
-    chat_history.update_history_list(response_str, user = info.get('user'))
-    
+    elif request.method == 'POST': 
+        info = request.json
+        print(info)
 
-    thread = threading.Thread(target=background_task, args=(info.get('user'), info_str))
-    thread.daemon = True
-    thread.start()
-    
+        if info.get('first_chatting'):
+            chat_history.reset_history_list(info.get('user'))
+        
+        #mp3정보를 text로 변환
+        if info.get('is_text'):
+            info_str = info.get('text')
+        else:
+            info_str = convert_mp3_to_text(info.get('mp3'))
+        
+        #text정보를 통해 답변 생성
+        response_str = return_chatbot_response(info_str=info_str, history_list=chat_history.get_history_list(info.get('user')))    
+        
+        #history정보 업데이트
+        chat_history.update_history_list(response_str, user = info.get('user'))
+        
 
-    response = {
-        "text": response_str,
-    }
-    
-    return jsonify(response), 200
+        thread = threading.Thread(target=background_task, args=(info.get('user'), info_str))
+        thread.daemon = True
+        thread.start()
+        
+
+        response = {
+            "text": response_str,
+        }
+        
+        return build_actual_response(jsonify(response), 200)
 
 
 
