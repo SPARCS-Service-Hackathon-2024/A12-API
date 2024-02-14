@@ -1,6 +1,15 @@
 from openai import OpenAI
 from typing import List
 import json
+import os
+import sys
+
+############## this block is just for import moudles ######
+current_path = os.path.dirname(os.path.realpath(__file__))
+parent_path = os.path.dirname(current_path)
+grand_path = os.path.dirname(parent_path)
+sys.path.append(parent_path)
+###########################################################
 
 from src.env import get_api_key
 
@@ -10,7 +19,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 SYSTEM = "You are someone who empathizes with other people's feelings. \
           Based on past conversation records, \
           you have to sympathize with the content and ask more about what happened in the past. \
-          Ask if there was any memorable incident in the family unit."
+          Ask if there was any memorable incident in the family unit. \
+          Encourage them to ask each age group about their case."
 
 def return_chatbot_response(info_str:str=None,
                             history_list:List=None) -> json:
@@ -65,8 +75,8 @@ if __name__ == '__main__':
 
     #가족 구성원에 대한 대답
 
-    input_example = "가족 단위 행사로는 설날, 명절에 윷놀이를 자주 했던 것 같아."
-    history_example = ["어제는 할아버지 생신이셔서 다같이 외식을 했어."]
+    input_example = "어제는 할아버지 생신이셔서 다같이 외식을 했어."
+    history_example = [""]
 
     output = return_chatbot_response(input_example, history_example)
     print(output)
