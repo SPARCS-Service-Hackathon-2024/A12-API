@@ -7,4 +7,5 @@ pysqlite3-binary
 streamlit-extras
 torchaudio
 pydub
-FFmpeg
+librosa
+scipy
