@@ -1,14 +1,12 @@
 from IPython.display import Audio
-from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech
-from pydub import AudioSegment
+from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, BarkModel, AutoProcessor
 from io import BytesIO
 import torch
 from time import time
-import librosa
 import numpy as np
-from scipy.io import wavfile
 from transformers import pipeline
-
+from pydub import AudioSegment
+from scipy.io.wavfile import write
 
 """
 The model can also generate non-verbal communications such as laughing,
@@ -17,18 +15,21 @@ sighing and crying. You just have to modify the input text with corresponding cu
 """
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-#processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
-#model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(DEVICE)
+model = BarkModel.from_pretrained("suno/bark").to(DEVICE)
+processor = AutoProcessor.from_pretrained("suno/bark")
 
-def convert_text_to_mp3(info_str: str):
+def convert_text_to_mp3(info_str: str,
+                        save_filename: str="test.wav"):
 
-
-    synthesizer = pipeline("text-to-speech", "microsoft/speecht5_tts")
-
-    synthesizer("Look I am generating speech in three lines of code!")
+    inputs = processor(info_str, voice_preset="v2/ko_speaker_3").to(DEVICE)
+    speech_output = model.generate(**inputs).cpu().numpy()
     
-    return None
+    sampling_rate = model.generation_config.sample_rate
+
+    write(save_filename, sampling_rate, speech_output[0])
+
+    return speech_output[0]
     
 
 if __name__=="__main__":
-    convert_text_to_mp3("hello world! my name is jonghyo")
+    convert_text_to_mp3("나는 가족들과 즐거운 시간을 보냈어. 여행을 가족들과 같이 많이 다니지 못해서 아쉬워.")

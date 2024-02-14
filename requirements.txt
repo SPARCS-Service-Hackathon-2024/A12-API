@@ -9,3 +9,4 @@ torchaudio
 pydub
 librosa
 scipy
+ffprobe

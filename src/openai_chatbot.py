@@ -47,7 +47,7 @@ def return_chatbot_response(info_str:str=None,
     )
     output = response.choices[0].message.content
     
-    return {"respone": output}
+    return output
 
 
 class chatting_history:
