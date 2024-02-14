@@ -34,7 +34,7 @@ def convert_text_to_mp3(info_str: str,
     write(save_filename, sampling_rate, speech_output[0])
 
     end = time()
-    print(end-start)
+    #print(end-start)
 
     return speech_output[0]
     

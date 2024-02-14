@@ -13,3 +13,4 @@ ffprobe
 optimum
 accelerate
 flask_sqlalchemy 
+asyncio

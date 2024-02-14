@@ -9,6 +9,12 @@ from src.speech2text import convert_mp3_to_text
 import io
 from flask import Flask, send_file
 import concurrent.futures
+import asyncio
+import threading
+
+def background_task(user, info_str):
+        chat_history.validate_current_user_response(user, info_str)
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite를 사용하고자 할 때
@@ -16,7 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite를 사용
 db = SQLAlchemy(app)
 
 @app.route('/chat', methods=['POST'])
-def get_mp3_based_on_text():
+async def get_mp3_based_on_text():
     """
     info = {
         "user": str,   #사용자 이름 (고유값)
@@ -45,10 +51,10 @@ def get_mp3_based_on_text():
     chat_history.update_history_list(response_str, user = info.get('user'))
     
 
-    ########## 여기 비동기 방식으로 background에서 미리 더빙 .wav 데이터 만들고 있기 필요
-    chat_history.validate_current_user_respone(user,info_str)
-    ###########################################################################
-
+    thread = threading.Thread(target=background_task, args=(info.get('user'), info_str))
+    thread.daemon = True
+    thread.start()
+    
 
     response = {
         "text": response_str,

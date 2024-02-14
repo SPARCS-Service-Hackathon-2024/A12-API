@@ -71,14 +71,15 @@ class chatting_history:
   def reset_history_list(self, user:str):
     self.history[user] = []
   
-  def validate_current_user_respone(self, user:str, info_str:str):
-    pass
+  def validate_current_user_response(self, user:str, info_str:str):
     
-    new_info_str = None
-    #gpt한테 기억할만한 사건인지 묻기.
-    #기억할만하다면 
+    #정제된 답변 만들어야 함. 얘로 달리랑 더빙 할거임
+    new_info_str = info_str
+
     if True:
-      add_story(user, new_info_str)
+      self.add_story(user, new_info_str)
+
+    return None
 
 
 
