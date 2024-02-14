@@ -10,3 +10,6 @@ pydub
 librosa
 scipy
 ffprobe
+optimum
+accelerate
+flask_sqlalchemy 

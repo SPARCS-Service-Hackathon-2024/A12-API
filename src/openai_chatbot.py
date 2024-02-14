@@ -10,8 +10,9 @@ parent_path = os.path.dirname(current_path)
 grand_path = os.path.dirname(parent_path)
 sys.path.append(parent_path)
 ###########################################################
-
+from src.dalle import return_dalle_response
 from src.env import get_api_key
+from src.text2speech import convert_text_to_mp3
 
 OPENAI_API_KEY = get_api_key()
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -53,6 +54,7 @@ def return_chatbot_response(info_str:str=None,
 class chatting_history:
   def __init__(self) -> None:
     self.history = dict()
+    self.correct_answer = dict() ## 이미지 + text + .wav 정보 저장하는 리스트
 
   def get_history_list(self, user:str):
     try:
@@ -62,13 +64,37 @@ class chatting_history:
     
   def update_history_list(self, text:str, user:str):
     try:
-      self.history[user].append([text])
+      self.history[user].append(text)
     except:
       self.history[user] = [text]
 
   def reset_history_list(self, user:str):
     self.history[user] = []
+  
+  def validate_current_user_respone(self, user:str, info_str:str):
+    pass
+    
+    new_info_str = None
+    #gpt한테 기억할만한 사건인지 묻기.
+    #기억할만하다면 
+    if True:
+      add_story(user, new_info_str)
 
+
+
+
+  def add_story(self, user:str, info_str:str):
+    
+    #variable info_str in this function is processed user input!!!
+
+    url = return_dalle_response(info_str)
+
+    wav = convert_text_to_mp3(info_str, "test1.wav")
+
+    try:
+      self.correct_answer[user].append((info_str,url,wav))
+    except:
+      self.correct_answer[user] = [(info_str,url,wav)]
 
 
 if __name__ == '__main__':

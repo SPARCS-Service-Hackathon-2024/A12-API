@@ -4,6 +4,7 @@ from src.text2speech import convert_text_to_mp3
 from src.speech2text import convert_mp3_to_text
 import io
 from time import time
+import concurrent.futures
 
 def get_mp3_based_on_text(info:dict):
     """
@@ -33,13 +34,19 @@ def get_mp3_based_on_text(info:dict):
     #history정보 업데이트
     chat_history.update_history_list(response_str, user = info['user'])
     
-    #답변을 mp3로 변환
-    audio = convert_text_to_mp3(response_str, "test_response.wav")
+    #가장 시간이 오래 걸리는 text2mp3 부분에서 dalle와 동기 처리
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_dalle = executor.submit(return_dalle_response, info_str)
+        future_audio = executor.submit(convert_text_to_mp3, "test_response.wav")
+    
+        image_url = future_dalle.result()
+        audio = future_audio.result()
     
     time_text2audio = time()
 
     print("====================")
     print(response_str)
+    print(image_url)
     print("===================")
     print(f"text2audio {time_text2audio-time_text2response}")
     print(f"respone {time_text2response-time_audio2text}")

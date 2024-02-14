@@ -17,4 +17,4 @@ def return_dalle_response(info_str:str=None) -> str:
     )
 
     image_url = response.data[0].url
-    return {"respone": image_url}
+    return image_url

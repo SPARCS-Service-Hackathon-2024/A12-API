@@ -16,17 +16,25 @@ sighing and crying. You just have to modify the input text with corresponding cu
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 model = BarkModel.from_pretrained("suno/bark").to(DEVICE)
+model =  model.to_bettertransformer()
+#model.enable_cpu_offload()
+
 processor = AutoProcessor.from_pretrained("suno/bark")
 
 def convert_text_to_mp3(info_str: str,
                         save_filename: str="test.wav"):
 
-    inputs = processor(info_str, voice_preset="v2/ko_speaker_3").to(DEVICE)
+    start = time()
+
+    inputs = processor(info_str, voice_preset="v2/ko_speaker_9").to(DEVICE)
     speech_output = model.generate(**inputs).cpu().numpy()
     
     sampling_rate = model.generation_config.sample_rate
 
     write(save_filename, sampling_rate, speech_output[0])
+
+    end = time()
+    print(end-start)
 
     return speech_output[0]
     
