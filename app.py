@@ -12,6 +12,9 @@ import concurrent.futures
 import asyncio
 import threading
 from flask_cors import CORS
+import os
+
+from db import db
 
 def background_task(user, info_str):
         chat_history.validate_current_user_response(user, info_str)
@@ -20,11 +23,17 @@ def background_task(user, info_str):
 app = Flask(__name__)
 # CORS(app, resources={r'*': {'origins': '*'}}, supports_credentials=True )
 
+db_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),"db.sqlite")
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite를 사용하고자 할 때
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/dbname'  # PostgreSQL을 사용하고자 할 때
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_file  # SQLite를 사용하고자 할 때
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+db.init_app(app)
+db.app = app
+
+with app.app_context():
+    db.create_all()
 
   
 def build_preflight_response():
@@ -102,17 +111,6 @@ def make_story():
     return jsonify({"story_list": story_list}), 200
 
 
-
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    userName = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
-    birthday = db.Column(db.String(100), nullable=False)
-    familyName = db.Column(db.String(100), nullable=False)
-    familyPassword = db.Column(db.String(100), nullable=False)
-    phoneNumber = db.Column(db.String(100), nullable=False)
-
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
@@ -188,4 +186,4 @@ def login():
 
 if __name__ == '__main__':
     chat_history = chatting_history()
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

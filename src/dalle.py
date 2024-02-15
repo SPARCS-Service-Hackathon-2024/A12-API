@@ -19,7 +19,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 def return_dalle_response(info_str:str=None) -> str:
     response = client.images.generate(
     model="dall-e-3",
-    prompt=f"a warm fairy tale style. Korea. family with 3 members. {info_str}",
+    prompt=f"a warm fairy tale style. family with 3 members. {info_str}",
     size="1024x1024",
     quality="standard",
     n=1,

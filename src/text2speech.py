@@ -1,5 +1,5 @@
 from IPython.display import Audio
-from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, BarkModel, AutoProcessor
+from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, BarkModel, AutoProcessor, VitsModel, VitsTokenizer
 from io import BytesIO
 import torch
 from time import time
@@ -15,12 +15,9 @@ sighing and crying. You just have to modify the input text with corresponding cu
 """
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
 model = BarkModel.from_pretrained("suno/bark").to(DEVICE) #
 model =  model.to_bettertransformer()
-
-model = VitsModel.from_pretrained("Matthijs/mms-tts-kor")
-tokenizer = VitsMmsTokenizer.from_pretrained("Matthijs/mms-tts-kor")
-
 #model.enable_cpu_offload()
 
 processor = AutoProcessor.from_pretrained("suno/bark") #
