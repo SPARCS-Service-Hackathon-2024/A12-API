@@ -120,16 +120,17 @@ def make_story():
     elif request.method == 'POST': 
         data = request.json
 
-        username = data.get('userName')
-        user = data.get('phoneNumber')
-        familyname = data.get('familyName')
-        
+        phone = data.get('phoneNumber')
+        familyname = data.get('familyName')        
 
         projectname = np.random.randint(0,9999)
 
+        user = User.query.filter_by(phoneNumber=phone).first()
+        username = user.userName
+
         ################### 사진 모두 완성될때까지 대기 #######################
         while True:
-            if chat_history.user_counter_start[user]==chat_history.user_counter_end[user]:
+            if chat_history.user_counter_start[phone]==chat_history.user_counter_end[phone]:
                 time.sleep(0.5)
                 break
             time.sleep(1)
@@ -177,9 +178,8 @@ def download_file(filename):
     return send_file(file_path, as_attachment=True)
 
 
-
 @app.route('/load_story_all', methods=['POST','OPTIONS'])
-def load_story():
+def load_story_all():
     if request.method == 'OPTIONS': 
         return build_preflight_response()
 
@@ -215,7 +215,7 @@ def load_story():
 
         # JSON 형식으로 데이터를 반환합니다.
         # List[Dict], 각 dictionary는 key: project_name, value는 storybook list
-        return jsonify({"storybooks": storybooks})
+        return build_actual_response(jsonify({"storybooks": storybooks}),200)
 
 
 
@@ -247,7 +247,7 @@ def load_story():
         })
 
     # JSON 형식으로 데이터를 반환합니다.
-    return jsonify({ "stories": stories})
+    return build_actual_response(jsonify({ "stories": stories}),200)
 
 
 
