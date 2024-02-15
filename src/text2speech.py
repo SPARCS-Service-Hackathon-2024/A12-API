@@ -44,4 +44,6 @@ def convert_text_to_mp3(info_str: str,
     
 
 if __name__=="__main__":
-    convert_text_to_mp3("나는 가족들과 즐거운 시간을 보냈어. 여행을 가족들과 같이 많이 다니지 못해서 아쉬워.")
+    output = convert_text_to_mp3("나는 가족들과 즐거운 시간을 보냈어. 여행을 가족들과 같이 많이 다니지 못해서 아쉬워.")
+    # print(f'shape ={output.shape}') # shape =(297600,)
+    # print(output) #[7.8684650e-04 3.9406144e-04 5.0455559e-04 ... 7.6108990e-05 8.5913998e-05 8.5368316e-05]

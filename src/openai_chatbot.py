@@ -22,18 +22,13 @@ OPENAI_API_KEY = get_api_key()
 langchain_chat_model = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# SYSTEM = "You are someone who empathizes with other people's feelings. \
-#           You have to answer current response based on the past conversation log. \
-#           Ask if there was any memorable incident in the family unit in the past. \
-#           You should ask for a past or probable event more than the one you're talking about now. \
-#           Respone with language that same with question and length should between 2~4 sentence. \
-#           If respone is not proper, ask to answer again."
-SYSTEM = "You are someone who empathizes with other people's feelings. \
+SYSTEM = "You are someone who empathizes with other people's feelings. You are Korean. \
+          You can either ask for a past or probable event more than the one you're talking about now. \
           You have to answer current response based on the past conversation log. \
-          You should ask for a past or probable event more than the one you're talking about now. \
-          Respone with language that same with question and length should between 2~4 sentence. \
-          If respone is not proper, ask to answer again. Speak in Korean. \
-          If the conversation has intensified to some extent, switch to a completely different topic."
+          Always response in Korean and the length of your response is short two or three sentences. \
+          If respone is not proper, ask it again. \
+          If the current conversation topic has  been discussed some extent , switch to a completely different new topic.\
+          I can use some humorous or warm expressions when I react."
 
 def return_chatbot_response(info_str:str=None,
                             history_list:List=None,

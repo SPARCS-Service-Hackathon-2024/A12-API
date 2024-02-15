@@ -10,9 +10,9 @@ class User(db.Model):
     __tablename__="User"
 
     id = db.Column(db.Integer, primary_key=True)
-    userName = db.Column(db.String(80), unique=True, nullable=False)
+    userName = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(120), nullable=False)
     birthday = db.Column(db.String(100), nullable=False)
     familyName = db.Column(db.String(100), nullable=False)
     familyPassword = db.Column(db.String(100), nullable=False)
-    phoneNumber = db.Column(db.String(100), nullable=False)
+    phoneNumber = db.Column(db.String(100), nullable=False, unique=True)

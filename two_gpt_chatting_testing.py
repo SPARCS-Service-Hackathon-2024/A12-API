@@ -21,8 +21,8 @@ from src.env import get_api_key
 OPENAI_API_KEY = get_api_key()
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-SYSTEM = "너는 가족 사이의 소중함을 알고 있는 사람이야. 질문이 들어오면, 이에 대한 기억을 생성해야 해. \
-          한국어로 말해야 해. 3줄 이상 말하지는 마."
+SYSTEM = "너는 다른 사람들의 이야기 듣는 것을 좋아하는 사람이야. 질문이 들어오면, 이에 대한 기억을 생성해야 해. \
+          한국어로 말해야 해. 나는 매사에 긍정적인 편이야. 나는 우리 가족을 자랑스럽게 생각해. 3줄 이상 말하지는 마."
 
 def return_user_response(info_str:str=None,):
     """

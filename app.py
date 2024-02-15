@@ -160,7 +160,7 @@ def register():
             return build_actual_response( jsonify({'message': 'fill all the blank'}), 400)
 
         #1.
-        user = User.query.filter_by(userName=username).first()
+        user = User.query.filter_by(phoneNumber=phonenumber).first()
         if user:
             return build_actual_response(jsonify({'message': 'user already exist'}), 400)
 
@@ -169,7 +169,7 @@ def register():
         user_famliyname = User.query.filter_by(familyName=familyname).first()
         if user_famliyname:
             #2.1.
-            user = User.query.filter_by(familyName=familyname).first()
+            user = User.query.filter_by(familyPassword=familypassword).first()
             if not user:
                 return build_actual_response(jsonify({'message': 'Invalid famliy password'}), 400)
 
