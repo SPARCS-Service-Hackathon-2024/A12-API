@@ -96,7 +96,7 @@ def get_mp3_based_on_text():
             "text": response_str,
         }
         
-        return build_actual_response(jsonify(response)), 200
+        return build_actual_response(jsonify(response))
 
 
 
@@ -112,79 +112,87 @@ def make_story():
 
         story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
         
-        return build_actual_response(jsonify({"story_list": story_list})), 200
+        return build_actual_response(jsonify({"story_list": story_list}))
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST','OPTIONS'])
 def register():
-    data = request.json
-    username = data.get('userName')
-    password = data.get('password')
-    yyyymmdd = data.get('birthday')
-    familyname = data.get('familyName')
-    familypassword = data.get('familyPassword')
-    phonenumber = data.get('phoneNumber')
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
 
-    #해야 하는 요소
-    #1. name 중복 여부
-    #2. familyname 존재 여부
-    #2.1. 존재 시 password가 맞는지 여부
-    #2.2. 존재 없으면 password 이거로 fix
-    #3. email foramt
+    elif request.method == 'POST': 
+        data = request.json
+        username = data.get('userName')
+        password = data.get('password')
+        yyyymmdd = data.get('birthday')
+        familyname = data.get('familyName')
+        familypassword = data.get('familyPassword')
+        phonenumber = data.get('phoneNumber')
 
-    if not (username and password and yyyymmdd and familyname and familypassword and phonenumber):
-        return jsonify({'message': 'fill all the blank'}), 400
+        #해야 하는 요소
+        #1. name 중복 여부
+        #2. familyname 존재 여부
+        #2.1. 존재 시 password가 맞는지 여부
+        #2.2. 존재 없으면 password 이거로 fix
+        #3. email foramt
 
-    #1.
-    user = User.query.filter_by(userName=username).first()
-    if user:
-        return jsonify({'message': 'user already exist'}), 400
+        if not (username and password and yyyymmdd and familyname and familypassword and phonenumber):
+            return build_actual_response( jsonify({'message': 'fill all the blank'}))
 
-
-    #2.
-    user_famliyname = User.query.filter_by(familyName=familyname).first()
-    if user_famliyname:
-        #2.1.
-        user = User.query.filter_by(familyName=familyname).first()
-        if not user:
-            return jsonify({'message': 'Invalid famliy password'}), 401
+        #1.
+        user = User.query.filter_by(userName=username).first()
+        if user:
+            return build_actual_response(jsonify({'message': 'user already exist'}))
 
 
-    new_user = User(userName=username, 
-                    password=password, 
-                    birthday=yyyymmdd, 
-                    familyName=familyname, 
-                    familyPassword=familypassword,
-                    phoneNumber=phonenumber)
-                
-    db.session.add(new_user)
-    db.session.commit()
-
-    return jsonify({'message': '사용자 등록이 완료되었습니다.'}), 200
+        #2.
+        user_famliyname = User.query.filter_by(familyName=familyname).first()
+        if user_famliyname:
+            #2.1.
+            user = User.query.filter_by(familyName=familyname).first()
+            if not user:
+                return build_actual_response(jsonify({'message': 'Invalid famliy password'}))
 
 
-@app.route('/login', methods=['POST'])
+        new_user = User(userName=username, 
+                        password=password, 
+                        birthday=yyyymmdd, 
+                        familyName=familyname, 
+                        familyPassword=familypassword,
+                        phoneNumber=phonenumber)
+                    
+        db.session.add(new_user)
+        db.session.commit()
+
+        return build_actual_response(jsonify({'message': '사용자 등록이 완료되었습니다.'}))
+
+
+@app.route('/login', methods=['POST', 'OPTIONS'])
 def login():
-    data = request.json
-    username = data.get('userName')
-    password = data.get('password')
-    if not username or not password:
-        return jsonify({'message': 'Missing username or password'}), 400
-    user = User.query.filter_by(userName=username, password=password).first()
-    if not user:
-        return jsonify({'message': 'Invalid username or password'}), 401
-    
-    # 사용자 정보 반환
-    user_info = {
-        'id': user.id,
-        'userName': user.userName,
-        'birthday': user.birthday,
-        'familyName': user.familyName,
-        'familyPassword': user.familyPassword,
-        'phoneNumber': user.phoneNumber
-    }
-    
-    return jsonify({'message': '로그인이 성공적으로 완료되었습니다.', 'user_info': user_info}), 200
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
+    elif request.method == 'POST': 
+        data = request.json
+        phoneNumber = data.get('phoneNumber')
+        password = data.get('password')
+        
+        if not phoneNumber or not password:
+            return build_actual_response(jsonify({'message': 'Missing phoneNumber or password'}))
+        user = User.query.filter_by(phoneNumber=phoneNumber, password=password).first()
+        if not user:
+            return build_actual_response(jsonify({'message': 'Invalid phoneNumber or password'}))
+        
+        # 사용자 정보 반환
+        user_info = {
+            'id': user.id,
+            'userName': user.userName,
+            'birthday': user.birthday,
+            'familyName': user.familyName,
+            'familyPassword': user.familyPassword,
+            'phoneNumber': user.phoneNumber
+        }
+        
+        return build_actual_response(jsonify({'message': '로그인이 성공적으로 완료되었습니다.', 'user_info': user_info}))
 
 
 

@@ -18,6 +18,10 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 model = BarkModel.from_pretrained("suno/bark").to(DEVICE) #
 model =  model.to_bettertransformer()
+
+# model = VitsModel.from_pretrained("Matthijs/mms-tts-kor")
+# tokenizer = VitsMmsTokenizer.from_pretrained("Matthijs/mms-tts-kor")
+
 #model.enable_cpu_offload()
 
 processor = AutoProcessor.from_pretrained("suno/bark") #
