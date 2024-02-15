@@ -90,7 +90,7 @@ def get_mp3_based_on_text():
                                                question_list=prev_question_list)    
         
         #langchain action 통한 종료 조건 발견
-        if quit2(response_str)=="isend":
+        if quit2(info_str)=="isend":
             is_end=True
 
         #history정보 업데이트
@@ -137,7 +137,7 @@ def make_story():
         
         ###########d##########################################################
 
-        story_list = chat_history.correct_answer #List[Tuple[str,str,str]]
+        story_list = chat_history.correct_answer[phone] #List[Tuple[str,str,str]]
 
 
         formatted_story_list = []
@@ -150,7 +150,7 @@ def make_story():
 
             current_date = datetime.now()
 
-            new_story = Story(
+            new_story = Storybook(
                             familyName=familyname,
                             projectName=projectname,
                             text=story[0],
@@ -166,7 +166,7 @@ def make_story():
         db.session.commit()
 
 
-        return build_actual_response(jsonify({"stories": story_list, 'storybookName': projectName}), 200)
+        return build_actual_response(jsonify({"stories": story_list, 'storybookName': projectname}), 200)
 
 
 @app.route('/<path:filename>', methods=['GET'])
@@ -335,4 +335,4 @@ def login():
 
 if __name__ == '__main__':
     chat_history = chatting_history()
-    app.run(debug=False, port=5001)
+    app.run(debug=False, port=5000)

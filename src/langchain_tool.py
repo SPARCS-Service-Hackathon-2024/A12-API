@@ -27,12 +27,12 @@ def quit2(content:str)->str:
     input : 사용자 답변
     output : 종료 의미시 1 반환, 아니면 0 반환
     """
-    SYSTEM = "If the user wants to quit or stop chatting service, return 1. Else, return 0. \
-                only return number 0 or 1."
+    SYSTEM = "너는 지금 사용자와 대화를 하고 있는 챗봇이야. 만약, 사용자가 이제 그만하자, 대화 그만하고 싶어, 대화 종료, 저리 가 등의 어감이 담긴 말을 하면 1을 반환하고, 그렇지 않으면 0을 반환해. \
+                텍스트 없이 무조건 숫자 하나로만 답변해. 명삼해, 1 또는 0만 대답할 수 있어."
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="gpt-4",
     messages=[
         {"role": "system", "content": f"{SYSTEM}"},
         {"role": "user", "content": f"{content}"},
