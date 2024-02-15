@@ -32,7 +32,7 @@ def return_dalle_response(info_str:str=None) -> str:
 
 if __name__=="__main__":
     
-    prompt = "my family member celebrate grandmother 60th birthday"
+    prompt = "I am swimming in the blue ocean with my families."
 
     url = return_dalle_response(prompt)
     print(url)

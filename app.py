@@ -14,6 +14,7 @@ import threading
 from flask_cors import CORS
 import os
 
+from src.langchain_tool import quit
 
 from db import db, User
 
@@ -61,6 +62,8 @@ def get_mp3_based_on_text():
     }
     
     """
+    is_end = False
+
     if request.method == 'OPTIONS': 
         return build_preflight_response()
 
@@ -83,6 +86,10 @@ def get_mp3_based_on_text():
                                                history_list=prev_history_list,
                                                question_list=prev_question_list)    
         
+        #langchain action 통한 종료 조건 발견
+        if quit(response_str)=="isend":
+            is_end=True
+
         #history정보 업데이트
         chat_history.update_history_list(history_text=info_str, 
                                          question_text=response_str, 
@@ -96,6 +103,7 @@ def get_mp3_based_on_text():
 
         response = {
             "text": response_str,
+            "is_end": is_end
         }
         
         return build_actual_response(jsonify(response), 200)

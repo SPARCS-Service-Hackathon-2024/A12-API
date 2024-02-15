@@ -19,8 +19,6 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 model = BarkModel.from_pretrained("suno/bark").to(DEVICE) #
 model =  model.to_bettertransformer()
 
-# model = VitsModel.from_pretrained("Matthijs/mms-tts-kor")
-# tokenizer = VitsMmsTokenizer.from_pretrained("Matthijs/mms-tts-kor")
 
 #model.enable_cpu_offload()
 
@@ -30,8 +28,9 @@ def convert_text_to_mp3(info_str: str,
                         save_filename: str="test.wav"):
 
     start = time()
- 
-    inputs = processor(info_str, voice_preset="v2/ko_speaker_9").to(DEVICE)
+    
+    v_p = "v2/ko_speaker_6" # Korean Male Voice : https://suno-ai.notion.site/8b8e8749ed514b0cbf3f699013548683?v=bc67cff786b04b50b3ceb756fd05f68c 
+    inputs = processor(info_str, voice_preset = v_p).to(DEVICE)
     speech_output = model.generate(**inputs).cpu().numpy()
     
     sampling_rate = model.generation_config.sample_rate
