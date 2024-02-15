@@ -129,9 +129,29 @@ def make_story():
         
         ###########d##########################################################
 
-        story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
-        
+        story_list = chat_history.correct_answer #List[Tuple[str,str,str]]
+
+
+        formatted_story_list = []
+        for story in story_list:
+            formatted_story_list.append({
+                "text": story[0],
+                "image_url": story[1],
+                "wav_url": story[2] # f"{localhost}/{wav_url}" is path of download
+            })
+
         return build_actual_response(jsonify({"story_list": story_list}), 200)
+
+
+@app.route('/<path:filename>', methods=['GET'])
+def download_file(filename):
+    # 파일이 저장된 경로
+    file_path = filename
+
+    # 클라이언트에게 파일 다운로드를 위한 URL 전송
+    return send_file(file_path, as_attachment=True)
+
+
 
 
 @app.route('/register', methods=['POST','OPTIONS'])

@@ -18,18 +18,17 @@ sys.path.append(parent_path)
 from src.env import get_api_key
 
 OPENAI_API_KEY = get_api_key()
-llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
+llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo") #ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
 
 # define tools
 #@tool
 def quit(content: str) -> str:
-    """Returns the length of a word."""
     template = """
-         When you sense the nuance of wanting to end the conversation in the folowing sentence, 
-         you return 1. sentence: {sentence}
+         If the given sentence includes words or sentences that wants to quit the conversation, return 1. Else, return 0. sentence: {sentence}
     """
     prompt = PromptTemplate.from_template(template)
-    if llm.predict(prompt.format(sentence = content))[0]:
+    result = (llm.predict(prompt.format(sentence = content)))
+    if result == 1:
         return 'isend'
     else:
         return 'ing'
@@ -52,9 +51,10 @@ from time import time
 start = time()
 print(1)
 res = agent_executor.run("I don't want to talk with you anymore.")
-#print(quit("I don't want to talk with you anymore."))
 print(res)
 end = time()
 print(end - start)
 #print(quit("Go away."))
 """
+
+print(quit("I want to stop our conversation."))

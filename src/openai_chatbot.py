@@ -245,7 +245,9 @@ class chatting_history:
     print(url)
     print("================")
 
-    wav = convert_text_to_mp3(info_str, "test1.wav")
+    wav = convert_text_to_mp3(user, info_str, self.user_counter_end[user])
+
+    
 
     self.user_counter_end[user]+=1
 

@@ -24,8 +24,9 @@ model =  model.to_bettertransformer()
 
 processor = AutoProcessor.from_pretrained("suno/bark") #
 
-def convert_text_to_mp3(info_str: str,
-                        save_filename: str="test.wav"):
+def convert_text_to_mp3(user:str,
+                        info_str: str,
+                        cnt: int=0):
 
     start = time()
     
@@ -34,13 +35,14 @@ def convert_text_to_mp3(info_str: str,
     speech_output = model.generate(**inputs).cpu().numpy()
     
     sampling_rate = model.generation_config.sample_rate
-
-    write(save_filename, sampling_rate, speech_output[0])
+    
+    save_url = f"wav_disk/{user}_{cnt}"
+    write(save_url, sampling_rate, speech_output[0])
 
     end = time()
     #print(end-start)
 
-    return speech_output[0]
+    return save_url
     
 
 if __name__=="__main__":
