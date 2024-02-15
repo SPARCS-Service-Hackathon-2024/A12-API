@@ -27,7 +27,8 @@ def quit2(content:str)->str:
     input : 사용자 답변
     output : 종료 의미시 1 반환, 아니면 0 반환
     """
-    SYSTEM = "If the given sentence includes words or sentences that means to quit, return 1. Else, return 0"
+    SYSTEM = "If the user wants to quit or stop chatting service, return 1. Else, return 0. \
+                only return number 0 or 1."
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     response = client.chat.completions.create(
@@ -38,6 +39,7 @@ def quit2(content:str)->str:
     ]
     )
     output = response.choices[0].message.content
+    print(f"is end output: {output}")
     if '1' in output: #output == 1:
         return 'isend'
     elif '0' in output: #== 0:
@@ -72,8 +74,8 @@ print(end - start)
 
 # print(quit2("I want to stop our conversation."))
 # print(quit2("I want to continue our conversation."))
-# print(quit2("Go away"))
-# print(quit2("이제 그만 할래"))
+print(quit2("Go away"))
+print(quit2("이제 그만 할래"))
 # print(quit2("이제 그만 할래"))
 # print(quit2("이제 그만 할래"))
 

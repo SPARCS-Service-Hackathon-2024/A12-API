@@ -170,10 +170,6 @@ def download_file(filename):
     return send_file(file_path, as_attachment=True)
 
 
-
-
-
-
 @app.route('/load_story', methods=['POST','OPTIONS'])
 def load_story():
     if request.method == 'OPTIONS': 
