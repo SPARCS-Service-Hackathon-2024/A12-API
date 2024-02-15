@@ -74,8 +74,8 @@ print(end - start)
 
 # print(quit2("I want to stop our conversation."))
 # print(quit2("I want to continue our conversation."))
-print(quit2("Go away"))
-print(quit2("이제 그만 할래"))
+#print(quit2("Go away"))
+#print(quit2("이제 그만 할래"))
 # print(quit2("이제 그만 할래"))
 # print(quit2("이제 그만 할래"))
 

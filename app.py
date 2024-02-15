@@ -8,6 +8,7 @@ from src.text2speech import convert_text_to_mp3
 from src.speech2text import convert_mp3_to_text
 import io
 from flask import Flask, send_file, make_response
+from itertools import groupby
 import concurrent.futures
 import asyncio
 import threading
@@ -168,6 +169,47 @@ def download_file(filename):
 
     # 클라이언트에게 파일 다운로드를 위한 URL 전송
     return send_file(file_path, as_attachment=True)
+
+
+
+@app.route('/load_story_all', methods=['POST','OPTIONS'])
+def load_story():
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
+
+    elif request.method == 'POST': 
+        data = request.json
+
+        familyname = data.get('familyName')
+
+        sorted_storybook = Storybook.query.filter_by(familyName=familyname).order_by(Storybook.projectName, Storybook.priority).all()
+
+        # projectName으로 그룹화합니다.
+        grouped_storybook = groupby(sorted_storybook, lambda x: x.projectName)
+
+        # 각 프로젝트별로 정리된 데이터를 담을 리스트
+        formatted_storybook = []
+
+        # 각 프로젝트를 순회하면서 데이터를 정리합니다.
+        for project_name, records in grouped_storybook:
+            project_data = []
+            for record in records:
+                project_data.append({
+                    "familyName": record.familyName,
+                    "projectName": record.projectName,
+                    "wavUrl": record.wavUrl,
+                    "imageUrl": record.imageUrl,
+                    "text": record.text,
+                    "priority": record.priority
+                })
+            # 각 프로젝트 데이터를 추가합니다.
+            formatted_storybook.append({project_name: project_data})
+
+        # JSON 형식으로 데이터를 반환합니다.
+        # List[Dict], 각 dictionary는 key: project_name, value는 storybook list
+        return jsonify({"storybook": formatted_storybook})
+
+
 
 
 @app.route('/load_story', methods=['POST','OPTIONS'])
