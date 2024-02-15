@@ -19,6 +19,8 @@ from src.env import get_api_key
 from openai import OpenAI
 
 OPENAI_API_KEY = get_api_key()
+client = OpenAI(api_key=OPENAI_API_KEY) 
+
 #llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo") #ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
 
 # define tools
@@ -29,8 +31,6 @@ def quit2(content:str)->str:
     """
     SYSTEM = "너는 지금 사용자와 대화를 하고 있는 챗봇이야. 만약, 사용자가 이제 그만하자, 대화 그만하고 싶어, 대화 종료, 저리 가 등의 어감이 담긴 말을 하면 1을 반환하고, 그렇지 않으면 0을 반환해. \
                 텍스트 없이 무조건 숫자 하나로만 답변해. 명삼해, 1 또는 0만 대답할 수 있어."
-    client = OpenAI(api_key=OPENAI_API_KEY)
-
     response = client.chat.completions.create(
     model="gpt-4",
     messages=[
@@ -46,6 +46,23 @@ def quit2(content:str)->str:
         return 'ing'
     else:
         return 'quit return error'
+
+
+def make_topic(contents:str)->str:
+    SYSTEM = "너는 전체 내용을 대표하는 제목을 만드는 사람입니다. \
+        부여받는 내용의 핵심이 되는 사건들을 대표할 수 있는 제목을 생성하세요. \
+        제목은 무조건 비교적 짧고 간결하며 압축적이어야하고 문학적이며 20자 이내이어야 합니다."
+    
+    response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": f"{SYSTEM}"},
+        {"role": "user", "content": f"{contents}"},
+    ]
+    )
+    output = response.choices[0].message.content
+
+    return output 
 """
 tools = [quit]
 
@@ -69,13 +86,3 @@ end = time()
 print(end - start)
 #print(quit("Go away."))
 """
-
-
-
-# print(quit2("I want to stop our conversation."))
-# print(quit2("I want to continue our conversation."))
-#print(quit2("Go away"))
-#print(quit2("이제 그만 할래"))
-# print(quit2("이제 그만 할래"))
-# print(quit2("이제 그만 할래"))
-

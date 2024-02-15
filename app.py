@@ -138,7 +138,13 @@ def make_story():
         ###########d##########################################################
 
         story_list = chat_history.correct_answer[phone] #List[Tuple[str,str,str]]
+        
+        contents = ""
+        for (a,b,c) in story_list:
+            contents = contents + a + " "
 
+        projectname = make_topic(contents=contents)
+        ####################################################33
 
         formatted_story_list = []
         for i, story in enumerate(story_list):
