@@ -29,3 +29,5 @@ class Storybook(db.Model):
     imageUrl = db.Column(db.String(100), nullable=False)
     text = db.Column(db.String(100), nullable=False)
     priority = db.Column(db.INTEGER, nullable=False) #프로젝트 내부 순서(우선순위)
+    userName = db.Column(db.String(100), nullable=False)
+    createdAt = db.Column(db.String(100), nullable=False)

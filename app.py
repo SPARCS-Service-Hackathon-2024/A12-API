@@ -15,6 +15,7 @@ import threading
 from flask_cors import CORS
 import os
 import numpy as np
+from datetime import datetime
 
 from src.langchain_tool import *
 
@@ -119,6 +120,7 @@ def make_story():
     elif request.method == 'POST': 
         data = request.json
 
+        username = data.get('userName')
         user = data.get('phoneNumber')
         familyname = data.get('familyName')
         
@@ -145,13 +147,17 @@ def make_story():
                 "wav_url": story[2] # f"{localhost}/{wav_url}" is path of download
             })
 
+            current_date = datetime.now()
+
             new_story = Story(
                             familyName=familyname,
                             projectName=projectname,
                             text=story[0],
                             imageUrl=story[1],
                             wavUrl=story[2],
-                            priority=i
+                            priority=i,
+                            userName=username,
+                            createdAt=current_date.strftime('%Y.%m.%d.') #yyyy.mm.dd.
                             )
                         
             db.session.add(new_story)
@@ -200,7 +206,9 @@ def load_story():
                     "wavUrl": story.wavUrl,
                     "imageUrl": story.imageUrl,
                     "text": story.text,
-                    "priority": story.priority
+                    "priority": story.priority,
+                    "userName": story.userName,
+                    "createdAt": story.createdAt
                 })
             # 각 프로젝트 데이터를 추가합니다.
             storybooks.append({'projectName': project_name, 'stories': story_list})
@@ -233,7 +241,9 @@ def load_story():
             "wavUrl": record.wavUrl,
             "imageUrl": record.imageUrl,
             "text": record.text,
-            "priority": record.priority
+            "priority": record.priority,
+            "userName": record.userName,
+            "createdAt": record.createdAt
         })
 
     # JSON 형식으로 데이터를 반환합니다.
