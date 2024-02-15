@@ -16,6 +16,7 @@ import os
 
 from src.langchain_tool import quit
 
+import time
 from db import db, User
 
 def background_task(user, info_str):
@@ -109,7 +110,6 @@ def get_mp3_based_on_text():
         return build_actual_response(jsonify(response), 200)
 
 
-
 @app.route('/make_story', methods=['POST','OPTIONS'])
 def make_story():
     if request.method == 'OPTIONS': 
@@ -120,6 +120,15 @@ def make_story():
 
         user = data.get('user')
 
+        ################### 사진 모두 완성될때까지 대기 #######################
+        while True:
+            if chat_history.user_counter_start[user]==chat_history.user_counter_end[user]:
+                time.sleep(0.5)
+                break
+            time.sleep(1)
+        
+        ###########d##########################################################
+
         story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
         
         return build_actual_response(jsonify({"story_list": story_list}), 200)
@@ -127,6 +136,7 @@ def make_story():
 
 @app.route('/register', methods=['POST','OPTIONS'])
 def register():
+
     if request.method == 'OPTIONS': 
         return build_preflight_response()
 

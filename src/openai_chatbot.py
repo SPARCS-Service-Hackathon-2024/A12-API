@@ -94,6 +94,9 @@ class chatting_history:
     self.correct_history = dict() # question과 부합하는 history들의 모음 
     self.correct_labels = dict() # correct_history들간의 유사성을 기반으로 묶어 라벨링
 
+    self.user_counter_start = dict()
+    self.user_counter_end = dict()
+
   def get_history_list(self, user:str) -> Tuple[Dict,Dict]:
     try:
       return self.history[user], self.question[user]
@@ -114,7 +117,9 @@ class chatting_history:
   def reset_history_list(self, user:str):
     self.history[user] = []
     self.question[user] = []
-  
+    self.user_counter_start[user] = 0
+    self.user_counter_end[user] = 0
+
   def score_similar_context(self, text1, text2, choice=None, threshold = 0.6):
     """
     choice = ['qna', 'ana'] question and anwer간, answer와 answer간.
@@ -179,6 +184,9 @@ class chatting_history:
       #올바른 답변이라면, 이미지 더빙하기에 적합한 텍스트 설명문장 요약/생성 -> user_chat을 바탕으로 output = 상황에 적합한 더빙
       #user chatting input이 들어온 상황에서 사람이 어떤 이미지를 소개하는 듯한 문장이 생성되어야 함.
       if(result):
+
+          self.user_counter_start[user]+=1
+
           new_info_str = self.return_summarized_responses(new_info_str)
           print('SUMMARIZED: ', new_info_str)
           self.add_story(user, new_info_str)
@@ -243,6 +251,8 @@ class chatting_history:
     print("================")
 
     wav = convert_text_to_mp3(info_str, "test1.wav")
+
+    self.user_counter_end[user]+=1
 
     try:
       self.correct_answer[user].append((info_str,url,wav))
