@@ -96,19 +96,23 @@ def get_mp3_based_on_text():
             "text": response_str,
         }
         
-        return build_actual_response(jsonify(response), 200)
+        return build_actual_response(jsonify(response)), 200
 
 
 
-@app.route('/make_story', methods=['POST'])
+@app.route('/make_story', methods=['POST','OPTIONS'])
 def make_story():
-    data = request.json
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
 
-    user = data.get('user')
+    elif request.method == 'POST': 
+        data = request.json
 
-    story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
-    
-    return jsonify({"story_list": story_list}), 200
+        user = data.get('user')
+
+        story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
+        
+        return build_actual_response(jsonify({"story_list": story_list})), 200
 
 
 @app.route('/register', methods=['POST'])
@@ -186,4 +190,4 @@ def login():
 
 if __name__ == '__main__':
     chat_history = chatting_history()
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)

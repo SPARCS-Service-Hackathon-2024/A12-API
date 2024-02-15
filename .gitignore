@@ -3,3 +3,6 @@ __pycache__
 env.py
 *.sqlite
 instance/*
+*.wav
+*.ipynb
+*.txt

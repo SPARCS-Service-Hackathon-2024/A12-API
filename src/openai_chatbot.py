@@ -16,10 +16,10 @@ sys.path.append(parent_path)
 ###########################################################
 from src.dalle import return_dalle_response
 from src.env import get_api_key
-#from src.text2speech import convert_text_to_mp3
+from src.text2speech import convert_text_to_mp3
 
 OPENAI_API_KEY = get_api_key()
-langchain_chat_model = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-4")
+langchain_chat_model = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # SYSTEM = "You are someone who empathizes with other people's feelings. \
@@ -32,7 +32,8 @@ SYSTEM = "You are someone who empathizes with other people's feelings. \
           You have to answer current response based on the past conversation log. \
           You should ask for a past or probable event more than the one you're talking about now. \
           Respone with language that same with question and length should between 2~4 sentence. \
-          If respone is not proper, ask to answer again. "
+          If respone is not proper, ask to answer again. Speak in Korean. \
+          If the conversation has intensified to some extent, switch to a completely different topic."
 
 def return_chatbot_response(info_str:str=None,
                             history_list:List=None,
@@ -46,14 +47,19 @@ def return_chatbot_response(info_str:str=None,
     system 제약 조건에서 user의 질문에 assistant 기반으로 답변
     """
     history_str = "Following information is about previous chatting log. \n"
-    for i, (his, ques) in enumerate(zip(history_list, question_list)):
-      history_str = history_str + f"# Answer {i}: {his} \n # Question {i}: {ques} \n "
+
+    max_len = len(history_list)
+    for i in range(max_len):
+      if i >= 2:
+          break
+      history_str = history_str + f"# Answer Log {i}: {history_list[max_len-1-i]} \n \
+                                    # Question Log {i}: {question_list[max_len-1-i]} \n"
 
     print(history_str)
 
     response = client.chat.completions.create(
-    #model="gpt-4",
-    model="gpt-3.5-turbo",
+    model="gpt-4",
+    #model="gpt-3.5-turbo",
     messages=[
         {"role": "system", "content": f"{SYSTEM}"},
         {"role": "user", "content": f"{info_str}"},
@@ -92,7 +98,7 @@ class chatting_history:
     try:
       return self.history[user], self.question[user]
     except: #when no history exists
-      return []
+      return [], []
     
   def update_history_list(self, 
                           history_text:str, 
@@ -124,8 +130,8 @@ class chatting_history:
       print('[EXCEPTION] INAVAILABLE CHOICE');return 0
       
     try:
-      print('text1 =', text1)
-      print('text2 =', text2)
+      #print('text1 =', text1)
+      #print('text2 =', text2)
       pattern =  r'\b\d+\.\d+\b|\b\d+\b'
       prompt = PromptTemplate.from_template(score_template)
       score = langchain_chat_model.predict(prompt.format(question=text1, answer = text2))
@@ -173,34 +179,56 @@ class chatting_history:
       #올바른 답변이라면, 이미지 더빙하기에 적합한 텍스트 설명문장 요약/생성 -> user_chat을 바탕으로 output = 상황에 적합한 더빙
       #user chatting input이 들어온 상황에서 사람이 어떤 이미지를 소개하는 듯한 문장이 생성되어야 함.
       if(result):
-        # 이전(혹은 직전 답변인) correct_history의 값과 현재 답변이 비슷한 맥락인지 체크 
-        try:
-          result2 = self.score_similar_context(self.correct_history[user][-1], info_str, choice = 'ana')
-          self.correct_history[user].append(info_str) # 현재 답변이 올바른 답변이므로 추가
-        except:
-          self.correct_history[user] = info_str # = self.history[user][-1] 
-          self.correct_labels[user] = [0] #시작값 = 0
-          result2 = 0
-        # 비슷한 맥락이면 동일 label, 다르면 새로운 label
-
-        if result2:   
-          self.correct_labels[user].append(self.correct_labels[user][-1])
-        else:
-          self.correct_labels[user].append(self.correct_labels[user][-1] + 1) # 1만큼 라벨 증가 
-
-          # 새로운 label을 받은 경우, 그전까지(같은 라벨인 동안)를 묶어서 -> 요약/생성 시킴(=new_info_str)
-          labels= np.array(self.correct_labels[user][:-1])
-          histories = np.array(self.correct_history[user][:-1])
-          new_info_lst = histories[labels == self.correct_labels[user][-2]]
-          new_info_str = ' '.join(new_info_lst)
           new_info_str = self.return_summarized_responses(new_info_str)
-          
-        #  print('SUMMARIZED: ', new_info_str)
-          self.add_story(user, new_info_str)  
-      else:
-        print('Not matched')
+          print('SUMMARIZED: ', new_info_str)
+          self.add_story(user, new_info_str)
 
-      return None
+      return None   
+
+
+      #   try:
+      #     result2 = self.score_similar_context(self.correct_history[user][-1], info_str, choice = 'ana')
+      #     self.correct_history[user].append(info_str) # 현재 답변이 올바른 답변이므로 추가
+      #   except:
+      #     self.correct_history[user] = [info_str] # = self.history[user][-1]     
+      #     result2 = -1
+
+      #   #print(f"result2: {result2}, info_str: {info_str}")
+
+      #   # 비슷한 맥락이면 동일 label, 다르면 새로운 label
+      #   if result2 == 1:   
+      #     self.correct_labels[user].append(self.correct_labels[user][-1])
+
+      #     #비슷한 내용 많으면 쪼개기
+      #     if len(self.correct_labels[user])>=3:
+      #       self.correct_labels[user].append(self.correct_labels[user][-1] + 1) # 1만큼 라벨 증가 
+      #       # 새로운 label을 받은 경우, 그전까지(같은 라벨인 동안)를 묶어서 -> 요약/생성 시킴(=new_info_str)
+      #       labels= np.array(self.correct_labels[user][:-1])
+      #       histories = np.array(self.correct_history[user][:-1])
+      #       new_info_lst = histories[labels == self.correct_labels[user][-2]]
+      #       new_info_str = ' '.join(new_info_lst)
+      #       new_info_str = self.return_summarized_responses(new_info_str)
+
+      #       print('SUMMARIZED: ', new_info_str)
+      #       self.add_story(user, new_info_str)  
+
+      #   elif result2 == -1:
+      #     self.correct_labels[user] = [0] #시작값 = 0
+      #   else:
+      #     self.correct_labels[user].append(self.correct_labels[user][-1] + 1) # 1만큼 라벨 증가 
+      #     # 새로운 label을 받은 경우, 그전까지(같은 라벨인 동안)를 묶어서 -> 요약/생성 시킴(=new_info_str)
+      #     labels= np.array(self.correct_labels[user][:-1])
+      #     histories = np.array(self.correct_history[user][:-1])
+      #     new_info_lst = histories[labels == self.correct_labels[user][-2]]
+      #     new_info_str = ' '.join(new_info_lst)
+      #     new_info_str = self.return_summarized_responses(new_info_str)
+
+      #     print('SUMMARIZED: ', new_info_str)
+      #     self.add_story(user, new_info_str)  
+      # else:
+      #   print('Not matched')
+
+      # return None
 
 
   def add_story(self, user:str, info_str:str):
@@ -209,6 +237,10 @@ class chatting_history:
 
     #지금은 dalle prompt를 상황 더빙 문장이 들어가는데, 키워드로 테스트할 필요성 다분 -> 괜찬
     url = return_dalle_response(info_str)
+
+    print("=============")
+    print(url)
+    print("================")
 
     wav = convert_text_to_mp3(info_str, "test1.wav")
 

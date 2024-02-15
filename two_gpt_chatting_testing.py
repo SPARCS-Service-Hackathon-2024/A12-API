@@ -9,6 +9,7 @@ import sys
 import re
 import numpy as np
 import requests
+import time
 ############## this block is just for import moudles ######
 current_path = os.path.dirname(os.path.realpath(__file__))
 parent_path = os.path.dirname(current_path)
@@ -20,7 +21,8 @@ from src.env import get_api_key
 OPENAI_API_KEY = get_api_key()
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-SYSTEM = "너는 가족 사이의 소중함을 알고 있는 사람이야. 질문이 들어오면, 이에 대한 기억을 생성해야 해."
+SYSTEM = "너는 가족 사이의 소중함을 알고 있는 사람이야. 질문이 들어오면, 이에 대한 기억을 생성해야 해. \
+          한국어로 말해야 해. 3줄 이상 말하지는 마."
 
 def return_user_response(info_str:str=None,):
     """
@@ -46,12 +48,17 @@ def return_user_response(info_str:str=None,):
 
 
 def two_gpt_chatting(text:str,
-                    api_url:str='http://example.com/api/endpoint',
-                    is_first_chatting:bool=False):
+                    url:str='https://ckkzfwkxjrrfknrj.tunnel-pt.elice.io/proxy/5001/chat',
+                    is_first_chatting:bool=False,
+                    loop:int=0):
     #입력으로 들어오는 text는 gpt 질문
 
     #gpt 질문 바탕 user가 text 생성
     text = return_user_response(text)
+
+    print(f"Answer {loop}: {text}")
+
+    start_time = time.time()
 
     data = {'user': 'jonghyo',
             'mp3': None,
@@ -60,10 +67,45 @@ def two_gpt_chatting(text:str,
             "is_text": True}
 
     #유저 답변 생성으로 gpt 질문 생성
-    response = requests.post(url, data=data)
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(url, data=json.dumps(data), headers=headers)
 
-    return response.get('text')
+    end_time = time.time()
+
+    print(f"\nRespone end in {end_time-start_time}\n")
+
+    json_data = json.loads(response.text)
+    text_info = json_data["text"]
+
+    return text_info
 
 
 if __name__=="__main__":
-    two_gpt_chatting()
+    num_iter = 10
+    text = "안녕! 이번주에 특별한 활동이 있었니?"
+    for i in range(num_iter):
+        print(f"Question {i}: {text}\n")
+        if i==0:
+            text= two_gpt_chatting(text=text,
+                                    is_first_chatting=True,
+                                    loop=i)
+        else:
+            text = two_gpt_chatting(text=text,
+                                    is_first_chatting=False,
+                                    loop=i)
+        
+
+    print("sleeping start...")
+    #time.sleep(300)
+
+    data = {'user': 'jonghyo'}
+
+    headers = {"Content-Type": "application/json"}
+    response = requests.post("https://ckkzfwkxjrrfknrj.tunnel-pt.elice.io/proxy/5001/make_story", 
+                            data=json.dumps(data), 
+                            headers=headers)
+
+    print("======================================")
+    for res in response:
+        print(res)
+    print("------------------")
