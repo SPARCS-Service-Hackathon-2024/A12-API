@@ -145,7 +145,7 @@ def make_story():
                 "wav_url": story[2] # f"{localhost}/{wav_url}" is path of download
             })
 
-            new_storybook = Storybook(
+            new_story = Story(
                             familyName=familyname,
                             projectName=projectname,
                             text=story[0],
@@ -154,12 +154,12 @@ def make_story():
                             priority=i
                             )
                         
-            db.session.add(new_storybook)
+            db.session.add(new_story)
         
         db.session.commit()
 
 
-        return build_actual_response(jsonify({"story_list": story_list}), 200)
+        return build_actual_response(jsonify({"stories": story_list, 'storybookName': projectName}), 200)
 
 
 @app.route('/<path:filename>', methods=['GET'])
@@ -188,26 +188,26 @@ def load_story():
         grouped_storybook = groupby(sorted_storybook, lambda x: x.projectName)
 
         # 각 프로젝트별로 정리된 데이터를 담을 리스트
-        formatted_storybook = []
+        storybooks = []
 
         # 각 프로젝트를 순회하면서 데이터를 정리합니다.
-        for project_name, records in grouped_storybook:
-            project_data = []
-            for record in records:
-                project_data.append({
-                    "familyName": record.familyName,
-                    "projectName": record.projectName,
-                    "wavUrl": record.wavUrl,
-                    "imageUrl": record.imageUrl,
-                    "text": record.text,
-                    "priority": record.priority
+        for project_name, stories in grouped_storybook:
+            story_list = []
+            for story in stories:
+                story_list.append({
+                    "familyName": story.familyName,
+                    "projectName": story.projectName,
+                    "wavUrl": story.wavUrl,
+                    "imageUrl": story.imageUrl,
+                    "text": story.text,
+                    "priority": story.priority
                 })
             # 각 프로젝트 데이터를 추가합니다.
-            formatted_storybook.append({project_name: project_data})
+            storybooks.append({'projectName': project_name, 'stories': story_list})
 
         # JSON 형식으로 데이터를 반환합니다.
         # List[Dict], 각 dictionary는 key: project_name, value는 storybook list
-        return jsonify({"storybook": formatted_storybook})
+        return jsonify({"storybooks": storybooks})
 
 
 
@@ -221,13 +221,13 @@ def load_story():
         data = request.json
 
         familyname = data.get('familyName')
-        projectname = data.get('projectName')
+        projectname = data.get('storybookName')
 
         sorted_storybook = Storybook.query.filter_by(familyName=familyname, projectName=projectname).order_by(Storybook.priority).all()
 
-        formatted_storybook = []
+        stories = []
         for record in sorted_storybook:
-            formatted_storybook.append({
+            stories.append({
             "familyName": record.familyName,
             "projectName": record.projectName,
             "wavUrl": record.wavUrl,
@@ -237,7 +237,7 @@ def load_story():
         })
 
     # JSON 형식으로 데이터를 반환합니다.
-    return jsonify({"storybook": formatted_storybook})
+    return jsonify({ "stories": stories})
 
 
 
