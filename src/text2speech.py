@@ -15,17 +15,21 @@ sighing and crying. You just have to modify the input text with corresponding cu
 """
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-model = BarkModel.from_pretrained("suno/bark").to(DEVICE)
+model = BarkModel.from_pretrained("suno/bark").to(DEVICE) #
 model =  model.to_bettertransformer()
+
+model = VitsModel.from_pretrained("Matthijs/mms-tts-kor")
+tokenizer = VitsMmsTokenizer.from_pretrained("Matthijs/mms-tts-kor")
+
 #model.enable_cpu_offload()
 
-processor = AutoProcessor.from_pretrained("suno/bark")
+processor = AutoProcessor.from_pretrained("suno/bark") #
 
 def convert_text_to_mp3(info_str: str,
                         save_filename: str="test.wav"):
 
     start = time()
-
+ 
     inputs = processor(info_str, voice_preset="v2/ko_speaker_9").to(DEVICE)
     speech_output = model.generate(**inputs).cpu().numpy()
     

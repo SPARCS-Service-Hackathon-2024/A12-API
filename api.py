@@ -67,10 +67,15 @@ def get_mp3_based_on_text():
             info_str = convert_mp3_to_text(info.get('mp3'))
         
         #text정보를 통해 답변 생성
-        response_str = return_chatbot_response(info_str=info_str, history_list=chat_history.get_history_list(info.get('user')))    
+        prev_history_list, prev_question_list = chat_history.get_history_list(info.get('user'))
+        response_str = return_chatbot_response(info_str=info_str, 
+                                               history_list=prev_history_list,
+                                               question_list=prev_question_list)    
         
         #history정보 업데이트
-        chat_history.update_history_list(response_str, user = info.get('user'))
+        chat_history.update_history_list(history_text=info_str, 
+                                         question_text=response_str, 
+                                         user = info.get('user'))
         
 
         thread = threading.Thread(target=background_task, args=(info.get('user'), info_str))
@@ -101,29 +106,55 @@ def make_story():
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    userName = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    yyyymmdd = db.Column(db.String(100), nullable=False)
-    familyname = db.Column(db.String(100), nullable=False)
-    familyposition = db.Column(db.String(100), nullable=False)
+    birthday = db.Column(db.String(100), nullable=False)
+    familyName = db.Column(db.String(100), nullable=False)
+    familyPassword = db.Column(db.String(100), nullable=False)
+    phoneNumber = db.Column(db.String(100), nullable=False)
 
 @app.route('/register', methods=['POST'])
 def register():
     data = request.json
-    username = data.get('username')
+    username = data.get('userName')
     password = data.get('password')
-    yyyymmdd = data.get('yyyymmdd')
-    familyname = data.get('familyname')
-    familyposition = data.get('familyposition')
+    yyyymmdd = data.get('birthday')
+    familyname = data.get('familyName')
+    familypassword = data.get('familyPassword')
+    phonenumber = data.get('phoneNumber')
 
-    if not (username and password and yyyymmdd and familyname and familyposition):
-        return jsonify({'message': '모든 필드를 제대로 입력해주세요.'}), 400
+    #해야 하는 요소
+    #1. name 중복 여부
+    #2. familyname 존재 여부
+    #2.1. 존재 시 password가 맞는지 여부
+    #2.2. 존재 없으면 password 이거로 fix
+    #3. email foramt
 
-    user = User.query.filter_by(username=username).first()
+    if not (username and password and yyyymmdd and familyname and familypassword and phonenumber):
+        return jsonify({'message': 'fill all the blank'}), 400
+
+    #1.
+    user = User.query.filter_by(userName=username).first()
     if user:
-        return jsonify({'message': '이미 존재하는 사용자명입니다.'}), 400
+        return jsonify({'message': 'user already exist'}), 400
 
-    new_user = User(username=username, password=password, yyyymmdd=yyyymmdd, familyname=familyname, familyposition=familyposition)
+
+    #2.
+    user_famliyname = User.query.filter_by(familyName=familyname).first()
+    if user_famliyname:
+        #2.1.
+        user = User.query.filter_by(familyName=familyname).first()
+        if not user:
+            return jsonify({'message': 'Invalid famliy password'}), 401
+
+
+    new_user = User(userName=username, 
+                    password=password, 
+                    birthday=yyyymmdd, 
+                    familyName=familyname, 
+                    familyPassword=familypassword,
+                    phoneNumber=phonenumber)
+                
     db.session.add(new_user)
     db.session.commit()
 
@@ -133,21 +164,22 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    username = data.get('username')
+    username = data.get('userName')
     password = data.get('password')
     if not username or not password:
         return jsonify({'message': 'Missing username or password'}), 400
-    user = User.query.filter_by(username=username, password=password).first()
+    user = User.query.filter_by(userName=username, password=password).first()
     if not user:
         return jsonify({'message': 'Invalid username or password'}), 401
     
     # 사용자 정보 반환
     user_info = {
         'id': user.id,
-        'username': user.username,
-        'yyyymmdd': user.yyyymmdd,
-        'familyname': user.familyname,
-        'familyposition': user.familyposition
+        'userName': user.userName,
+        'birthday': user.birthday,
+        'familyName': user.familyName,
+        'familyPassword': user.familyPassword,
+        'phoneNumber': user.phoneNumber
     }
     
     return jsonify({'message': '로그인이 성공적으로 완료되었습니다.', 'user_info': user_info}), 200
