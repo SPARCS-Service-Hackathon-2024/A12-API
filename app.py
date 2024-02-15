@@ -14,7 +14,8 @@ import threading
 from flask_cors import CORS
 import os
 
-from db import db
+
+from db import db, User
 
 def background_task(user, info_str):
         chat_history.validate_current_user_response(user, info_str)
@@ -43,8 +44,9 @@ def build_preflight_response():
     response.headers.add('Access-Control-Allow-Methods', "*")
     return response
     
-def build_actual_response(response):
+def build_actual_response(response, status):
     response.headers.add("Access-Control-Allow-Origin", "*")
+    response.status = status
     return response
 
 @app.route('/chat', methods=['POST', 'OPTIONS'])
@@ -96,7 +98,7 @@ def get_mp3_based_on_text():
             "text": response_str,
         }
         
-        return build_actual_response(jsonify(response))
+        return build_actual_response(jsonify(response), 200)
 
 
 
@@ -112,7 +114,7 @@ def make_story():
 
         story_list = chat_history.correct_answer #List[Tuple[str,url,.wav]]
         
-        return build_actual_response(jsonify({"story_list": story_list}))
+        return build_actual_response(jsonify({"story_list": story_list}), 200)
 
 
 @app.route('/register', methods=['POST','OPTIONS'])
@@ -137,12 +139,12 @@ def register():
         #3. email foramt
 
         if not (username and password and yyyymmdd and familyname and familypassword and phonenumber):
-            return build_actual_response( jsonify({'message': 'fill all the blank'}))
+            return build_actual_response( jsonify({'message': 'fill all the blank'}), 400)
 
         #1.
         user = User.query.filter_by(userName=username).first()
         if user:
-            return build_actual_response(jsonify({'message': 'user already exist'}))
+            return build_actual_response(jsonify({'message': 'user already exist'}), 400)
 
 
         #2.
@@ -151,7 +153,7 @@ def register():
             #2.1.
             user = User.query.filter_by(familyName=familyname).first()
             if not user:
-                return build_actual_response(jsonify({'message': 'Invalid famliy password'}))
+                return build_actual_response(jsonify({'message': 'Invalid famliy password'}), 400)
 
 
         new_user = User(userName=username, 
@@ -164,7 +166,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return build_actual_response(jsonify({'message': '사용자 등록이 완료되었습니다.'}))
+        return build_actual_response(jsonify({'message': '사용자 등록이 완료되었습니다.'}), 200)
 
 
 @app.route('/login', methods=['POST', 'OPTIONS'])
@@ -177,10 +179,10 @@ def login():
         password = data.get('password')
         
         if not phoneNumber or not password:
-            return build_actual_response(jsonify({'message': 'Missing phoneNumber or password'}))
+            return build_actual_response(jsonify({'message': 'Missing phoneNumber or password'}), 400)
         user = User.query.filter_by(phoneNumber=phoneNumber, password=password).first()
         if not user:
-            return build_actual_response(jsonify({'message': 'Invalid phoneNumber or password'}))
+            return build_actual_response(jsonify({'message': 'Invalid phoneNumber or password'}), 401)
         
         # 사용자 정보 반환
         user_info = {
@@ -192,7 +194,7 @@ def login():
             'phoneNumber': user.phoneNumber
         }
         
-        return build_actual_response(jsonify({'message': '로그인이 성공적으로 완료되었습니다.', 'user_info': user_info}))
+        return build_actual_response(jsonify({'message': '로그인이 성공적으로 완료되었습니다.', 'user_info': user_info}), 200)
 
 
 
