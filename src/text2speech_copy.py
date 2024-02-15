@@ -18,7 +18,7 @@ text = "안녕 나는 너무 피곤하다 으악"
 inputs = tokenizer(text, return_tensors="pt")
 print(inputs)
 with torch.no_grad():
-    output = model(**inputs).waveform
+    output = model(**inputs).waveform ##
 
 # WAV 파일 작성
 scipy.io.wavfile.write("techno.wav", rate=model.config.sampling_rate, data=output_np_int16)
