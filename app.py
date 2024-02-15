@@ -15,7 +15,7 @@ from flask_cors import CORS
 import os
 import numpy as np
 
-from src.langchain_tool import quit
+from src.langchain_tool import *
 
 import time
 from db import db, User, Storybook
@@ -88,7 +88,7 @@ def get_mp3_based_on_text():
                                                question_list=prev_question_list)    
         
         #langchain action 통한 종료 조건 발견
-        if quit(response_str)=="isend":
+        if quit2(response_str)=="isend":
             is_end=True
 
         #history정보 업데이트
