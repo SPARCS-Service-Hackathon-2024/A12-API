@@ -16,23 +16,34 @@ grand_path = os.path.dirname(parent_path)
 sys.path.append(parent_path)
 ###########################################################
 from src.env import get_api_key
+from openai import OpenAI
 
 OPENAI_API_KEY = get_api_key()
-llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo") #ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
+#llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model_name = "gpt-3.5-turbo") #ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
 
 # define tools
-#@tool
-def quit(content: str) -> str:
-    template = """
-         If the given sentence includes words or sentences that wants to quit the conversation, return 1. Else, return 0. sentence: {sentence}
+def quit2(content:str)->str:
     """
-    prompt = PromptTemplate.from_template(template)
-    result = (llm.predict(prompt.format(sentence = content)))
-    if result == 1:
-        return 'isend'
-    else:
-        return 'ing'
+    input : 사용자 답변
+    output : 종료 의미시 1 반환, 아니면 0 반환
+    """
+    SYSTEM = "If the given sentence includes words or sentences that means to quit, return 1. Else, return 0"
+    client = OpenAI(api_key=OPENAI_API_KEY)
 
+    response = client.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": f"{SYSTEM}"},
+        {"role": "user", "content": f"{content}"},
+    ]
+    )
+    output = response.choices[0].message.content
+    if '1' in output: #output == 1:
+        return 'isend'
+    elif '0' in output: #== 0:
+        return 'ing'
+    else:
+        return 'quit return error'
 """
 tools = [quit]
 
@@ -57,4 +68,12 @@ print(end - start)
 #print(quit("Go away."))
 """
 
-print(quit("I want to stop our conversation."))
+
+
+# print(quit2("I want to stop our conversation."))
+# print(quit2("I want to continue our conversation."))
+# print(quit2("Go away"))
+# print(quit2("이제 그만 할래"))
+# print(quit2("이제 그만 할래"))
+# print(quit2("이제 그만 할래"))
+

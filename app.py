@@ -13,11 +13,12 @@ import asyncio
 import threading
 from flask_cors import CORS
 import os
+import numpy as np
 
 from src.langchain_tool import quit
 
 import time
-from db import db, User
+from db import db, User, Storybook
 
 def background_task(user, info_str):
         chat_history.validate_current_user_response(user, info_str)
@@ -55,8 +56,8 @@ def build_actual_response(response, status):
 def get_mp3_based_on_text():
     """
     info = {
-        "user": str,   #사용자 이름 (고유값)
-        "mp3": wav, #mp3 데이터,
+        "phoneNumber": str,   #사용자 이름 (고유값)
+        "mp3": wav파일 주소 (구현 X)
         "text": str
         "first_chatting": boolean  #해당 사용자가 처음 대화를 시작하는지의 여부
         "is_text": boolean
@@ -70,10 +71,9 @@ def get_mp3_based_on_text():
 
     elif request.method == 'POST': 
         info = request.json
-        print(info)
 
         if info.get('first_chatting'):
-            chat_history.reset_history_list(info.get('user'))
+            chat_history.reset_history_list(info.get('phoneNumber'))
         
         #mp3정보를 text로 변환
         if info.get('is_text'):
@@ -82,7 +82,7 @@ def get_mp3_based_on_text():
             info_str = convert_mp3_to_text(info.get('mp3'))
         
         #text정보를 통해 답변 생성
-        prev_history_list, prev_question_list = chat_history.get_history_list(info.get('user'))
+        prev_history_list, prev_question_list = chat_history.get_history_list(info.get('phoneNumber'))
         response_str = return_chatbot_response(info_str=info_str, 
                                                history_list=prev_history_list,
                                                question_list=prev_question_list)    
@@ -94,10 +94,10 @@ def get_mp3_based_on_text():
         #history정보 업데이트
         chat_history.update_history_list(history_text=info_str, 
                                          question_text=response_str, 
-                                         user = info.get('user'))
+                                         user = info.get('phoneNumber'))
         
 
-        thread = threading.Thread(target=background_task, args=(info.get('user'), info_str))
+        thread = threading.Thread(target=background_task, args=(info.get('phoneNumber'), info_str))
         thread.daemon = True
         thread.start()
         
@@ -118,7 +118,11 @@ def make_story():
     elif request.method == 'POST': 
         data = request.json
 
-        user = data.get('user')
+        user = data.get('phoneNumber')
+        familyname = data.get('familyName')
+        
+
+        projectname = np.random.randint(0,9999)
 
         ################### 사진 모두 완성될때까지 대기 #######################
         while True:
@@ -133,12 +137,26 @@ def make_story():
 
 
         formatted_story_list = []
-        for story in story_list:
+        for i, story in enumerate(story_list):
             formatted_story_list.append({
                 "text": story[0],
                 "image_url": story[1],
                 "wav_url": story[2] # f"{localhost}/{wav_url}" is path of download
             })
+
+            new_storybook = Storybook(
+                            familyName=familyname,
+                            projectName=projectname,
+                            text=story[0],
+                            imageUrl=story[1],
+                            wavUrl=story[2],
+                            priority=i
+                            )
+                        
+            db.session.add(new_storybook)
+        
+        db.session.commit()
+
 
         return build_actual_response(jsonify({"story_list": story_list}), 200)
 
@@ -151,6 +169,37 @@ def download_file(filename):
     # 클라이언트에게 파일 다운로드를 위한 URL 전송
     return send_file(file_path, as_attachment=True)
 
+
+
+
+
+
+@app.route('/load_story', methods=['POST','OPTIONS'])
+def load_story():
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
+
+    elif request.method == 'POST': 
+        data = request.json
+
+        familyname = data.get('familyName')
+        projectname = data.get('projectName')
+
+        sorted_storybook = Storybook.query.filter_by(familyName=familyname, projectName=projectname).order_by(Storybook.priority).all()
+
+        formatted_storybook = []
+        for record in sorted_storybook:
+            formatted_storybook.append({
+            "familyName": record.familyName,
+            "projectName": record.projectName,
+            "wavUrl": record.wavUrl,
+            "imageUrl": record.imageUrl,
+            "text": record.text,
+            "priority": record.priority
+        })
+
+    # JSON 형식으로 데이터를 반환합니다.
+    return jsonify({"storybook": formatted_storybook})
 
 
 
