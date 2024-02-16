@@ -112,8 +112,10 @@ class chatting_history:
   def reset_history_list(self, user:str):
     self.history[user] = []
     self.question[user] = []
+    self.correct_answer[user] = []
     self.user_counter_start[user] = 0
     self.user_counter_end[user] = 0
+    
 
   def score_similar_context(self, text1, text2, choice=None, threshold = 0.3):
     """
@@ -244,6 +246,10 @@ class chatting_history:
     print("=============")
     print(url)
     print("================")
+
+    print(user)
+    print(info_str)
+    print(self.user_counter_end[user])
 
     wav = convert_text_to_mp3(user, info_str, self.user_counter_end[user])
 
