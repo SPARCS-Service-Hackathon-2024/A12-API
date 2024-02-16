@@ -30,7 +30,8 @@ def convert_text_to_mp3(user:str,
 
     start = time()
     
-    v_p = "v2/ko_speaker_6" # Korean Male Voice : https://suno-ai.notion.site/8b8e8749ed514b0cbf3f699013548683?v=bc67cff786b04b50b3ceb756fd05f68c 
+   
+    v_p = "v2/ko_speaker_0" # Korean Female Voice : https://suno-ai.notion.site/8b8e8749ed514b0cbf3f699013548683?v=bc67cff786b04b50b3ceb756fd05f68c 
     inputs = processor(info_str, voice_preset = v_p).to(DEVICE)
     speech_output = model.generate(**inputs).cpu().numpy()
     

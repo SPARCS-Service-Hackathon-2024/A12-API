@@ -309,6 +309,22 @@ def register():
 
         return build_actual_response(jsonify({'message': '사용자 등록이 완료되었습니다.'}), 200)
 
+@app.route('/get_all_user_in_family', methods=['POST','OPTIONS'])
+def get_all_user():
+    if request.method == 'OPTIONS': 
+        return build_preflight_response()
+
+    elif request.method == 'POST': 
+        data = request.json
+
+        familyname = data.get('familyName')
+
+        users = User.query.filter_by(familyName=familyname).all()
+
+        usernames = [user.userName for user in users]
+
+        return build_actual_response(jsonify( {"userNames": usernames} ), 200)
+    
 
 @app.route('/login', methods=['POST', 'OPTIONS'])
 def login():

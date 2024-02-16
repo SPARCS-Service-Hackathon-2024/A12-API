@@ -115,7 +115,7 @@ class chatting_history:
     self.user_counter_start[user] = 0
     self.user_counter_end[user] = 0
 
-  def score_similar_context(self, text1, text2, choice=None, threshold = 0.6):
+  def score_similar_context(self, text1, text2, choice=None, threshold = 0.3):
     """
     choice = ['qna', 'ana'] question and anwer간, answer와 answer간.
     output = 0 or 1
@@ -167,7 +167,7 @@ class chatting_history:
 
   
   def validate_current_user_response(self, user:str, info_str:str):
-      threshold = 0.6
+      # threshold = 0.6
       #정제된 답변 만들어야 함. 얘로 달리랑 더빙 할거임
       new_info_str = info_str
 
